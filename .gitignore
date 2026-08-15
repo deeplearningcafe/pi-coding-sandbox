@@ -1,0 +1,11 @@
+__pycache__/
+*.csv
+*.json
+monitor/
+pi_home/cache/
+pi_home/python/
+pi_home/agent/bin
+pi_home/agent/sessions
+*.xlsx
+ignore/
+*yaml

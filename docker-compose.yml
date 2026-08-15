@@ -1,0 +1,45 @@
+networks:
+  pi_internal:
+    driver: bridge
+
+services:
+  pi-agent:
+    build:
+      context: .
+      dockerfile: pi.Dockerfile
+    container_name: pi_sandbox
+    networks:
+      - pi_internal
+    volumes:
+      - ./monitor:/home/pisandbox/project
+      - ./pi_home:/home/pisandbox/.pi
+      # Mount configuration as Read-Only (:ro)
+      - ~/.config/nvim:/home/pisandbox/.config/nvim:ro
+      # Keep runtime folders as Read-Write so Neovim can function
+      - ~/.local/share/nvim:/home/pisandbox/.local/share/nvim
+      - ~/.local/state/nvim:/home/pisandbox/.local/state/nvim
+      - ~/.cache/nvim:/home/pisandbox/.cache/nvim
+    environment:
+      - PI_LLM_PROVIDER=openai
+      - PI_LLM_BASE_URL=http://host.docker.internal:8001/v1
+      - PI_LLM_MODEL=qwen3.6-35b
+      - GIT_CONFIG_GLOBAL=/home/pisandbox/.pi/gitconfig
+      # Redirect UV configurations to our writable host volume
+      - UV_CACHE_DIR=/home/pisandbox/.pi/cache/uv
+      - UV_TOOL_DIR=/home/pisandbox/.pi/tools
+      - UV_PYTHON_INSTALL_DIR=/home/pisandbox/.pi/python
+    read_only: true
+    tmpfs:
+      - /tmp                        # 一般的な一時ファイル用
+      - /run                        # システムロック、PIDファイル、ソケット用
+      - /var/tmp                    # コンパイラ等のフォールバック用
+      - /home/pisandbox/.cache:uid=5000,gid=5000      # uv, pip, ruff等のツールキャッシュ用
+      - /home/pisandbox/.local:uid=5000,gid=5000,mode=0700
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true
