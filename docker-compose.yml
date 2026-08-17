@@ -21,8 +21,11 @@ services:
       - ~/.cache/nvim:/home/pisandbox/.cache/nvim
     environment:
       - PI_LLM_PROVIDER=openai
-      - PI_LLM_BASE_URL=http://host.docker.internal:8001/v1
+      - PI_LLM_BASE_URL=${LLAMA_SERVER_URL:-http://host.docker.internal:8001/v1}
       - PI_LLM_MODEL=qwen3.6-35b
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - SEARXNG_URL=${SEARXNG_URL:-http://host.docker.internal:8080/search}
+      - CRAWL4AI_URL=${CRAWL4AI_URL:-http://host.docker.internal:11235/crawl}
       - GIT_CONFIG_GLOBAL=/home/pisandbox/.pi/gitconfig
       # Redirect UV configurations to our writable host volume
       - UV_CACHE_DIR=/home/pisandbox/.pi/cache/uv

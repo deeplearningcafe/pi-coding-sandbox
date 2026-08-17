@@ -9,3 +9,4 @@ pi_home/agent/sessions
 *.xlsx
 ignore/
 *yaml
+.env

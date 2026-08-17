@@ -1,12 +1,13 @@
+import os
 import sys
 import json
 import urllib.request
 import urllib.parse
 
-# local SearXNG endpoint (LAN IP)
-SEARXNG_URL = "http://192.168.1.135:8080/search"
 
-CRAWL4AI_URL = "http://host.docker.internal:11235/crawl"
+# Dynamic endpoint resolution with backward-compatible defaults
+SEARXNG_URL = os.environ.get("SEARXNG_URL", "http://host.docker.internal:8080/search")
+CRAWL4AI_URL = os.environ.get("CRAWL4AI_URL", "http://host.docker.internal:11235/crawl")
 
 
 def search_searxng(query):

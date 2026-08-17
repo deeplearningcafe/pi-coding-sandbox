@@ -22,6 +22,7 @@ A detail explanation is published here [ローカルLLMで「Pi」エージェ�
 
 ```text
 pi-sandbox/
+├── .env.example                # Sample environment variables (URLs & keys)
 ├── docker-compose.yml          # Pi agent sandbox container definition
 ├── pi.Dockerfile               # Hardened Node.js/Python sandbox environment
 ├── project/                    # Target workspace mounted to agent container
@@ -130,20 +131,58 @@ docker run -d \
 
 ### 4. Configure Agent Settings
 
+#### Environment Variables (`.env`)
+Create a `.env` file from `.env.example`. If running the inference engine on
+the same machine, leave `LLAMA_SERVER_URL` default. If hosting on another
+LAN machine (e.g., `http://your-machine.local:8001/v1`), specify it here.
+
+```bash
+cp .env.example .env
+```
+
+```bash
+# Target llama-server endpoint (defaults to local host if omitted)
+LLAMA_SERVER_URL=http://host.docker.internal:8001/v1
+
+# Optional Google AI Studio key for cloud fallback
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Local search helper endpoints
+SEARXNG_URL=http://host.docker.internal:8080/search
+CRAWL4AI_URL=http://host.docker.internal:11235/crawl
+```
+
 #### `pi_home/agent/models.json`
 ```json
 {
-  "providers": {
-    "local-server": {
-      "baseUrl": "http://host.docker.internal:8001/v1",
-      "api": "openai-chat",
-      "apiKey": "none",
-      "models": [
-        { "id": "qwen3.6-35b" }
-      ]
-    }
-  },
-  "defaultModel": "qwen3.6-35b"
+    "providers": {
+        "local-server": {
+            "baseUrl": "${PI_LLM_BASE_URL:-http://host.docker.internal:8001/v1}",
+            "api": "openai-completions",
+            "apiKey": "none",
+            "models": [
+                {
+                    "id": "qwen3.6-35b",
+                    "name": "Qwen 3.6 35B (Local LLM)"
+                }
+            ]
+        },
+        "google": {
+            "api": "google-generative-ai",
+            "apiKey": "${GEMINI_API_KEY}",
+            "models": [
+                {
+                    "id": "gemma-4-31b-it",
+                    "name": "gemma-4-31b-it (Cloud Reserve)"
+                },
+                {
+                    "id": "gemini-2.5-flash",
+                    "name": "gemini-2.5-flash (Cloud Reserve)"
+                }
+            ]
+        }
+    },
+    "defaultModel": "qwen3.6-35b"
 }
 ```
 
